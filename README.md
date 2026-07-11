@@ -1,40 +1,46 @@
-# Advanced Breast Cancer Classification with Neural Networks
+# Breast Cancer Classification with a Regularized Neural Network
 
-> Educational machine learning project using the Scikit-learn Breast Cancer Wisconsin dataset.  
-> **Important:** This project is for learning and portfolio purposes only. It is **not** a medical diagnostic tool.
+> Educational machine learning project built on the Scikit-learn Breast Cancer Wisconsin dataset.
+> **Note:** this is a learning/portfolio project, not a medical diagnostic tool.
 
-## Project overview
+## About this project
 
-This project improves a simple neural-network notebook into a more GitHub-ready deep learning project.
+I started with a simple tutorial-style neural network — one hidden layer, no regularization,
+no baseline to compare against — and rebuilt it into a proper end-to-end classification
+project. The goal was to go beyond "train a model, check accuracy" and actually practice the
+things that matter in a real ML workflow: a correct validation strategy, comparing against a
+baseline, tuning the decision threshold without leaking test data, explaining the model's
+predictions, and testing the code.
 
-The workflow includes:
+The workflow covers:
 
 - Exploratory Data Analysis (EDA)
 - Stratified train/validation/test split
 - Feature scaling with `StandardScaler`
-- Baseline model using Logistic Regression
-- Advanced Keras neural network with Batch Normalization, Dropout, and L2 regularization
+- A Logistic Regression baseline to compare the neural network against
+- A regularized Keras neural network (Batch Normalization, Dropout, L2)
 - Early stopping and best-model checkpointing
-- Evaluation with Accuracy, Precision, Recall, F1-score, ROC-AUC, confusion matrix, ROC curve, and Precision-Recall curve
-- Threshold tuning for safer classification analysis
-- SHAP explainability: global feature importance + per-prediction waterfall plots
-- Saved model, scaler, feature names, and metadata
-- Streamlit app for interactive prediction
+- Evaluation with accuracy, precision, recall, F1, ROC-AUC, confusion matrix, ROC and
+  Precision-Recall curves
+- Threshold tuning — chosen on the validation set, not the test set, to avoid leaking
+  test information into the decision
+- SHAP explainability: global feature importance plus a per-prediction waterfall plot
+- Saved model, scaler, feature names, and run metadata
+- A Streamlit app for interactive prediction
 - Automated tests (`pytest`) covering data integrity and model behavior
 
 ## Dataset
 
-The project uses the built-in `load_breast_cancer()` dataset from Scikit-learn.
+Built-in `load_breast_cancer()` dataset from scikit-learn.
 
 Classes:
-
 - `0` = Malignant
 - `1` = Benign
 
 ## Project structure
 
-```text
-breast_cancer_nn_advanced_github/
+```
+breast-cancer-classification/
 │
 ├── app/
 │   └── streamlit_app.py
@@ -94,9 +100,9 @@ python -m pip install -r requirements.txt
 python -m src.train
 ```
 
-This will create:
+This creates:
 
-```text
+```
 models/breast_cancer_nn.keras
 models/scaler.joblib
 models/feature_names.joblib
@@ -118,9 +124,9 @@ python -m src.predict
 python -m src.explain
 ```
 
-This will create:
+This creates:
 
-```text
+```
 reports/figures/shap_summary.png
 reports/figures/shap_single_prediction.png
 ```
@@ -137,28 +143,24 @@ pytest tests/
 streamlit run app/streamlit_app.py
 ```
 
-## What makes this version more advanced?
+## What I focused on
 
-The original notebook trains a simple neural network and checks accuracy. This advanced version adds:
+The original notebook this started from trains a bare neural network and checks accuracy.
+Rebuilding it, I focused on:
 
-- Clean project structure
-- Reusable Python modules
-- Better validation strategy (proper train/val/test split, threshold tuned on validation, not test)
-- Baseline comparison
-- More serious evaluation metrics
-- Threshold tuning
-- SHAP explainability (global + per-prediction)
-- Model/scaler saving
-- A small app for prediction
-- Automated tests
-- A clear README for GitHub
-
-## Portfolio explanation
-
-You can describe this project on your GitHub like this:
-
-> Built an advanced binary classification pipeline for breast cancer tumor classification using TensorFlow/Keras. The project includes EDA, preprocessing, a baseline model, a regularized neural network, threshold tuning, model evaluation with multiple metrics, model persistence, and a Streamlit interface for interactive predictions.
+- A clean, modular project structure instead of one long notebook
+- A correct validation strategy — proper train/val/test split, with the decision threshold
+  tuned on validation data and the test set touched only once, at the end
+- A baseline model, so the neural network's performance means something relative to a
+  simpler alternative
+- More complete evaluation than accuracy alone (precision, recall, F1, ROC-AUC, PR curve)
+- SHAP explainability, since "the model said so" isn't good enough reasoning on its own,
+  especially for a health-related dataset
+- Tests, so the data pipeline and model behavior are actually verified, not just assumed
+- A small Streamlit app so the model is something you can interact with, not just numbers
+  in a notebook
 
 ## Disclaimer
 
-This is a learning project using a public educational dataset. It should not be used for real medical decision-making.
+This is a learning project built on a public educational dataset. It is not intended for
+real medical decision-making.
