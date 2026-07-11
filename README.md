@@ -5,10 +5,9 @@
 
 ## About this project
 
-I started with a simple tutorial-style neural network — one hidden layer, no regularization,
-no baseline to compare against — and rebuilt it into a proper end-to-end classification
-project. The goal was to go beyond "train a model, check accuracy" and actually practice the
-things that matter in a real ML workflow: a correct validation strategy, comparing against a
+This project builds an end-to-end classification pipeline on the Breast Cancer Wisconsin
+dataset. The goal was to practice the things that matter in a real ML workflow, not just
+train a model and check accuracy: a correct validation strategy, comparing against a
 baseline, tuning the decision threshold without leaking test data, explaining the model's
 predictions, and testing the code.
 
@@ -52,8 +51,7 @@ breast-cancer-classification/
 │   └── .gitkeep
 │
 ├── notebooks/
-│   ├── 00_original_breast_cancer_nn.ipynb
-│   └── 01_advanced_breast_cancer_nn.ipynb
+│   └── breast_cancer_nn.ipynb
 │
 ├── reports/
 │   └── figures/
@@ -145,8 +143,7 @@ streamlit run app/streamlit_app.py
 
 ## What I focused on
 
-The original notebook this started from trains a bare neural network and checks accuracy.
-Rebuilding it, I focused on:
+Rather than just training a model and checking accuracy, I focused on:
 
 - A clean, modular project structure instead of one long notebook
 - A correct validation strategy — proper train/val/test split, with the decision threshold
