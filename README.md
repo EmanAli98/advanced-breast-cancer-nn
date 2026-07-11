@@ -1,7 +1,7 @@
 # Breast Cancer Classification with a Regularized Neural Network
 
-> Educational machine learning project built on the Scikit-learn Breast Cancer Wisconsin dataset.
-> **Note:** this is a learning/portfolio project, not a medical diagnostic tool.
+> Machine learning project built on the Scikit-learn Breast Cancer Wisconsin dataset.
+> **Note:** this is a portfolio project, not a medical diagnostic tool.
 
 ## About this project
 
@@ -159,5 +159,5 @@ Rather than just training a model and checking accuracy, I focused on:
 
 ## Disclaimer
 
-This is a learning project built on a public educational dataset. It is not intended for
+This project built on a public educational dataset. It is not intended for
 real medical decision-making.
