@@ -1,163 +1,141 @@
-# Breast Cancer Classification with a Regularized Neural Network
+# Breast Cancer Classification: Evaluation, Explainability & Interactive Demo
 
-> Machine learning project built on the Scikit-learn Breast Cancer Wisconsin dataset.
-> **Note:** this is a portfolio project, not a medical diagnostic tool.
+An end-to-end machine learning portfolio project comparing a regularized Keras neural network with Logistic Regression on scikit-learn's Breast Cancer Wisconsin (Diagnostic) dataset.
 
-## About this project
+**Core contribution:** extending a notebook experiment into a modular workflow with stratified evaluation, validation-only threshold selection, SHAP explanations, reusable inference artifacts, a Streamlit interface, and automated tests.
 
-This project builds an end-to-end classification pipeline on the Breast Cancer Wisconsin
-dataset. The goal was to practice the things that matter in a real ML workflow, not just
-train a model and check accuracy: a correct validation strategy, comparing against a
-baseline, tuning the decision threshold without leaking test data, explaining the model's
-predictions, and testing the code.
+**Educational portfolio project only; not a medical diagnostic tool.** “Advanced” in the repository name refers to the workflow, not advanced-stage cancer. The task is benign/malignant classification, not cancer staging or prognosis.
 
-The workflow covers:
+## Technical contributions
 
-- Exploratory Data Analysis (EDA)
-- Stratified train/validation/test split
-- Feature scaling with `StandardScaler`
-- A Logistic Regression baseline to compare the neural network against
-- A regularized Keras neural network (Batch Normalization, Dropout, L2)
-- Early stopping and best-model checkpointing
-- Evaluation with accuracy, precision, recall, F1, ROC-AUC, confusion matrix, ROC and
-  Precision-Recall curves
-- Threshold tuning — chosen on the validation set, not the test set, to avoid leaking
-  test information into the decision
-- SHAP explainability: global feature importance plus a per-prediction waterfall plot
-- Saved model, scaler, feature names, and run metadata
-- A Streamlit app for interactive prediction
-- Automated tests (`pytest`) covering data integrity and model behavior
+- **Evaluation design:** stratified train/validation/test splits of approximately 70%/15%/15% (397/86/86 samples), with `StandardScaler` fitted only on training features.
+- **Baseline comparison:** Logistic Regression and the neural network use the same training data, scaled features, and held-out test split.
+- **Regularized modeling:** a 64 → 32 → 16 → 1 network with Batch Normalization, Dropout, L2 regularization, balanced training class weights, early stopping, best-model checkpointing, and learning-rate reduction.
+- **Decision policy:** select the neural network threshold on validation data by maximizing F1 over 181 thresholds from 0.05 to 0.95. Test labels are not used for threshold selection.
+- **Explainability:** a separate SHAP script generates global feature-attribution and single-prediction waterfall plots.
+- **Software engineering:** separate data, model, training, evaluation, explanation, and prediction modules; saved model/scaler/feature order/metadata; a Streamlit demo; pytest checks for data and model contracts.
 
-## Dataset
+See [the original experiment](notebooks/00_original_breast_cancer_nn.ipynb) and [the extended notebook](notebooks/01_advanced_breast_cancer_nn.ipynb). The module commands below are the main reproducible workflow.
 
-Built-in `load_breast_cancer()` dataset from scikit-learn.
+## Dataset and label semantics
 
-Classes:
-- `0` = Malignant
-- `1` = Benign
+The built-in `load_breast_cancer()` dataset contains 569 samples and 30 numeric features derived from breast-mass cell nuclei. No separate CSV download is required.
 
-## Project structure
+| Label | Class | Interpretation |
+| --- | --- | --- |
+| 0 | Malignant | Model output below the selected threshold |
+| 1 | Benign | Model output at or above the selected threshold |
 
-```
-breast-cancer-classification/
-│
-├── app/
-│   └── streamlit_app.py
-│
-├── data/
-│   └── README.md
-│
-├── models/
-│   └── .gitkeep
-│
-├── notebooks/
-│   └── breast_cancer_nn.ipynb
-│
-├── reports/
-│   └── figures/
-│       └── .gitkeep
-│
-├── src/
-│   ├── __init__.py
-│   ├── config.py
-│   ├── data.py
-│   ├── evaluate.py
-│   ├── explain.py
-│   ├── model.py
-│   ├── predict.py
-│   └── train.py
-│
-├── tests/
-│   ├── test_data.py
-│   └── test_model.py
-│
-├── .gitignore
-├── requirements.txt
-└── README.md
-```
+The sigmoid output estimates **P(benign)**. The threshold objective and default binary precision, recall, F1, ROC and precision–recall curves treat **benign as the positive class**. They must not be described as malignant detection sensitivity. The neural network classification report also provides malignant-class precision, recall and F1.
 
-## How to run locally
+## Comparison and results
 
-### 1. Create and activate a virtual environment
+**Results status:** the current repository does not include trained artifacts, `models/metadata.json`, or executed outputs in the extended notebook. No numerical advantage of the neural network over Logistic Regression is established by the checked-in evidence. Outputs from the original notebook are not results for this extended pipeline.
 
-```powershell
+After running `python -m src.train`, inspect `models/metadata.json`:
+
+| Test-set result | Logistic Regression | Neural network |
+| --- | --- | --- |
+| Decision threshold | Fixed at 0.5 | Selected on validation F1 |
+| Accuracy | `baseline_logistic_regression.accuracy` | `neural_network.classification_report.accuracy` |
+| Benign precision / recall / F1 | `baseline_logistic_regression.precision`, `recall`, `f1` | `neural_network.classification_report.benign` |
+| ROC-AUC | `baseline_logistic_regression.roc_auc` | `neural_network.roc_auc` |
+| Confusion matrix | Not saved by the current baseline code | `neural_network.confusion_matrix` |
+
+Confusion-matrix rows are true labels and columns are predicted labels, both ordered malignant then benign. The malignant → benign cell represents a missed malignant case.
+
+**How to interpret the comparison:** threshold-dependent scores use different decision policies, and only the neural network uses balanced class weights. This is a useful baseline comparison, but it does not isolate the effect of model architecture. ROC-AUC compares ranking without choosing a threshold. Report the actual outcome, including a baseline win or tie; greater complexity alone is not evidence of improvement.
+
+## Run locally
+
+Run all commands from the repository root. Use a Python version supported by TensorFlow; Python 3.11 is a suggested starting point, not a verified compatibility guarantee. Dependencies currently specify minimum versions rather than a locked environment.
+
+```bash
+git clone https://github.com/EmanAli98/advanced-breast-cancer-nn.git
+cd advanced-breast-cancer-nn
 python -m venv .venv
-.venv\Scripts\Activate.ps1
 ```
 
-### 2. Install dependencies
+Activate the environment:
 
-```powershell
+- macOS / Linux: `source .venv/bin/activate`
+- Windows PowerShell: `.venv\Scripts\Activate.ps1`
+
+Install dependencies and train:
+
+```bash
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
-```
-
-### 3. Train the model
-
-```powershell
 python -m src.train
 ```
 
-This creates:
+Training writes:
 
+- `models/breast_cancer_nn.keras`, `scaler.joblib`, `feature_names.joblib`, and `metadata.json`
+- `reports/figures/test_confusion_matrix.png`
+- `reports/figures/test_roc_curve.png`
+- `reports/figures/test_precision_recall_curve.png`
+
+### Streamlit demo
+
+Train first: the app requires all four artifacts in `models/`.
+
+```bash
+python -m streamlit run app/streamlit_app.py
 ```
-models/breast_cancer_nn.keras
-models/scaler.joblib
-models/feature_names.joblib
-models/metadata.json
-reports/figures/confusion_matrix.png
-reports/figures/roc_curve.png
-reports/figures/precision_recall_curve.png
+
+Open the local URL printed in the terminal (usually `http://localhost:8501`). Enter the 30 features using the sidebar numeric inputs, then select **Predict**. The app displays P(benign), the saved validation threshold, the predicted class, and run metadata. Its initial zero values are placeholders, not a representative sample. SHAP plots are generated separately and are not embedded in the app.
+
+### Tests
+
+```bash
+python -m pytest tests/ -q
 ```
 
-### 4. Make one prediction from the command line
+Training and saved model files are not required for these tests; TensorFlow must still be installed. The suite contains eight tests covering dataset shape, split proportions, training-feature standardization, class balance, feature order, model input/output shapes, sigmoid output range, loss, and compiled metrics. These are unit checks; they do not establish model quality or end-to-end app reliability.
 
-```powershell
+### Prediction and explanations
+
+After training:
+
+```bash
 python -m src.predict
-```
-
-### 5. Generate SHAP explainability plots
-
-```powershell
 python -m src.explain
 ```
 
-This creates:
+The prediction command uses a hard-coded 30-feature example. SHAP writes `reports/figures/shap_summary.png` and `shap_single_prediction.png`; generation can be slower than ordinary prediction.
 
-```
-reports/figures/shap_summary.png
-reports/figures/shap_single_prediction.png
-```
+## Repository guide
 
-### 6. Run the tests
+| Location | Purpose |
+| --- | --- |
+| `src/data.py`, `src/config.py` | Dataset loading, stratified splitting, scaling, paths and split seed |
+| `src/model.py`, `src/train.py` | Keras architecture, baseline, callbacks, threshold selection and artifact saving |
+| `src/evaluate.py` | Threshold search, classification report and evaluation plots |
+| `src/explain.py`, `src/predict.py` | SHAP attribution and saved-artifact inference |
+| `app/streamlit_app.py` | Interactive prediction demo |
+| `tests/test_data.py`, `tests/test_model.py` | Data-pipeline and model unit checks |
+| `notebooks/` | Original experiment and extended walkthrough |
+| `models/`, `reports/figures/` | Generated artifacts and plots; initially placeholders |
 
-```powershell
-pytest tests/
-```
+## Limitations and lessons
 
-### 7. Run the Streamlit app
+- **Small, single benchmark:** 86 test samples and one split provide limited evidence of generalization. There is no external validation, clinical validation, subgroup analysis, or uncertainty interval.
+- **Objective choice matters:** maximizing benign F1 does not directly minimize missed malignant cases. A malignancy-focused policy would require a separately specified validation objective.
+- **Validation reuse:** early stopping and threshold selection share the same validation split. This avoids test-based tuning but can still overfit validation choices. Test results should not guide repeated revisions.
+- **Reproducibility is partial:** the split seed and TensorFlow seed are set, but dependencies are not locked and full deterministic training is not configured.
+- **SHAP explains model behavior, not causality:** the current script uses 50 held-out test samples as its background and recreates the scaler from the split rather than loading the saved scaler. This does not tune the threshold, but makes explanations dependent on that test distribution and matching preprocessing.
+- **Demo scope:** inputs lack domain-range validation, displayed probabilities have not been calibrated, and tests do not yet cover artifact loading, threshold selection, or the Streamlit workflow.
 
-```powershell
-streamlit run app/streamlit_app.py
-```
+## Small next improvements
 
-## What I focused on
+1. **Publish evidence:** attach a dated run summary with commit, environment versions, both models' metrics, malignant recall, thresholds, and confusion matrices. Add the actual comparison table and one evaluation figure here after verification.
+2. **Make the demo immediate:** add one clearly labeled dataset example, a screenshot or short GIF, and a demo link when available; replace zero defaults and validate input ranges.
+3. **Strengthen repeatability:** record a tested environment and add GitHub Actions for pytest. Add focused checks for split disjointness, train-only scaler fitting, threshold selection, and saved-artifact inference.
+4. **Align explanations and inference:** load the saved scaler in SHAP and use a training-only background. Compare threshold policies consistently on validation data before any new final test evaluation.
 
-Rather than just training a model and checking accuracy, I focused on:
+For a CV or LinkedIn project entry, a supportable description is:
 
-- A clean, modular project structure instead of one long notebook
-- A correct validation strategy — proper train/val/test split, with the decision threshold
-  tuned on validation data and the test set touched only once, at the end
-- A baseline model, so the neural network's performance means something relative to a
-  simpler alternative
-- More complete evaluation than accuracy alone (precision, recall, F1, ROC-AUC, PR curve)
-- SHAP explainability, since "the model said so" isn't good enough reasoning on its own,
-  especially for a health-related dataset
-- Tests, so the data pipeline and model behavior are actually verified, not just assumed
-- A small Streamlit app so the model is something you can interact with, not just numbers
-  in a notebook
+> Built a modular breast-cancer classification pipeline comparing a regularized Keras network with Logistic Regression, with stratified evaluation, validation-only threshold tuning, SHAP explanations, a Streamlit demo, and eight pytest unit checks.
 
-## Disclaimer
-
-This project built on a public educational dataset. It is not intended for
-real medical decision-making.
+Add measured results only after publishing a reproducible run. The strongest current portfolio evidence is the evaluation design, explainability workflow, and code organization.
